@@ -24,29 +24,46 @@ dp.middleware.setup(LoggingMiddleware())
 # Определение состояний
 class Form(StatesGroup):
     name = State()
+    dob = State()
     address = State()
+    email = State()
+    passport_number = State()
+    passport_issuer = State()
+    snils = State()
+    phone = State()
+    direction = State()
     statement = State()
 
 # Обработчик команды /start
 @dp.message_handler(commands='start')
 async def cmd_start(message: types.Message):
     logging.info("Команда /start получена")
-    await Form.name.set()
-    await message.reply("Привет! Я помогу тебе создать заявление. Введи своё имя и фамилию.")
-
-# Обработчик команды /help
-@dp.message_handler(commands='help')
-async def cmd_help(message: types.Message):
-    logging.info("Команда /help получена")
-    await message.reply("Используйте команду /start, чтобы начать создание заявления. Следуйте инструкциям для ввода данных.")
+    await Form.name1.set()
+    await message.reply("Привет! Я помогу тебе создать заявление. Введи свои фамилию, имя и отчество в именительном падеже (напр. Иванов Иван Иванович).")
 
 # Обработчик ввода имени и фамилии
-@dp.message_handler(state=Form.name)
+@dp.message_handler(state=Form.name1)
 async def process_name(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
-        data['name'] = message.text
+        data['name1'] = message.text
     await Form.next()
-    await message.reply("Спасибо! Теперь введи свой адрес.")
+    await message.reply("Теперь введи их в родительном падеже (напр. Иванова Ивана Ивановича).")
+    
+# Обработчик ввода имени и фамилии
+@dp.message_handler(state=Form.name2)
+async def process_name(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['name2'] = message.text
+    await Form.next()
+    await message.reply("Введите вашу дату рождения (ДД.ММ.ГГГГ).")
+
+# Обработчик ввода даты рождения
+@dp.message_handler(state=Form.dob)
+async def process_dob(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['dob'] = message.text
+    await Form.next()
+    await message.reply("Введите ваш адрес регистрации.")
 
 # Обработчик ввода адреса
 @dp.message_handler(state=Form.address)
@@ -54,22 +71,75 @@ async def process_address(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['address'] = message.text
     await Form.next()
-    await message.reply("Спасибо! Теперь введи текст заявления.")
+    await message.reply("Введите ваш email.")
 
-# Обработчик ввода текста заявления
-@dp.message_handler(state=Form.statement)
-async def process_statement(message: types.Message, state: FSMContext):
+# Обработчик ввода email
+@dp.message_handler(state=Form.email)
+async def process_email(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
-        data['statement'] = message.text
+        data['email'] = message.text
+    await Form.next()
+    await message.reply("Введите серию и номер паспорта, отделите их пробелом.")
+
+# Обработчик ввода серии и номера паспорта
+@dp.message_handler(state=Form.passport_number)
+async def process_passport_number(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['passport_number'] = message.text
+    await Form.next()
+    await message.reply("Кем выдан паспорт?")
+
+# Обработчик ввода данных о выдаче паспорта
+@dp.message_handler(state=Form.passport_issuer)
+async def process_passport_issuer(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['passport_issuer'] = message.text
+    await Form.next()
+    await message.reply("Введите ваш СНИЛС.")
+
+# Обработчик ввода СНИЛС
+@dp.message_handler(state=Form.snils)
+async def process_snils(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['snils'] = message.text
+    await Form.next()
+    await message.reply("Введите ваш контактный телефон в виде +7-ХХХ-ХХХ-ХХ-ХХ.")
+
+# Обработчик ввода контактного телефона
+@dp.message_handler(state=Form.phone)
+async def process_phone(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['phone'] = message.text
+    await Form.next()
+    await message.reply("Выберите направление:\n1. Анализ данных в педагогической деятельности\n2. Автоматизация работы с данными и документами")
+
+# Обработчик выбора направления
+@dp.message_handler(state=Form.direction)
+async def process_direction(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        if message.text == "1":
+            data['direction'] = "Анализ данных в педагогической деятельности"
+        elif message.text == "2":
+            data['direction'] = "Автоматизация работы с данными и документами"
+        else:
+            await message.reply("Пожалуйста, выберите корректное направление: 1 или 2")
+            return
 
         # Загрузка шаблона документа
         template_path = 'template.docx'
         doc = Document(template_path)
 
         # Замена заполнителей в документе
-        replace_text(doc, '{{name}}', data['name'])
+        replace_text(doc, '{{name1}}', data['name1'])
+        replace_text(doc, '{{name2}}', data['name2'])
+        replace_text(doc, '{{dob}}', data['dob'])
         replace_text(doc, '{{address}}', data['address'])
-        replace_text(doc, '{{statement}}', data['statement'])
+        replace_text(doc, '{{email}}', data['email'])
+        replace_text(doc, '{{passport_number}}', data['passport_number'])
+        replace_text(doc, '{{passport_issuer}}', data['passport_issuer'])
+        replace_text(doc, '{{snils}}', data['snils'])
+        replace_text(doc, '{{phone}}', data['phone'])
+        replace_text(doc, '{{direction}}', data['direction'])
 
         # Сохранение документа в BytesIO
         file_stream = BytesIO()
