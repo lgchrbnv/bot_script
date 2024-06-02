@@ -23,7 +23,8 @@ dp.middleware.setup(LoggingMiddleware())
 
 # Определение состояний
 class Form(StatesGroup):
-    name = State()
+    name1 = State()
+    name2 = State()
     dob = State()
     address = State()
     email = State()
@@ -32,7 +33,6 @@ class Form(StatesGroup):
     snils = State()
     phone = State()
     direction = State()
-    statement = State()
 
 # Обработчик команды /start
 @dp.message_handler(commands='start')
