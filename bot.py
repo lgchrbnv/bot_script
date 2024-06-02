@@ -1,3 +1,4 @@
+import os
 import logging
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import ParseMode
@@ -9,8 +10,8 @@ from aiogram.utils import executor
 from docx import Document
 from io import BytesIO
 
-# Ваш токен, который вы получили от BotFather
-API_TOKEN = '7133041801:AAGvWpIuFSBhrd1562Dpo8bmCDM_Q9PdBO8'
+# Получение токена из переменной окружения
+API_TOKEN = os.getenv('API_TOKEN')
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
