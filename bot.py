@@ -77,7 +77,7 @@ async def process_statement(message: types.Message, state: FSMContext):
         file_stream.seek(0)
 
         # Отправка документа пользователю
-        await message.reply_document(document=file_stream, filename='zayavlenie.docx')
+        await bot.send_document(chat_id=message.chat.id, document=file_stream, filename='zayavlenie.docx')
         await message.reply("Заявление создано и отправлено!")
 
     # Завершение состояния
