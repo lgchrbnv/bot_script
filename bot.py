@@ -1,7 +1,6 @@
 import os
 import logging
 from aiogram import Bot, Dispatcher, types
-from aiogram.types import ParseMode
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
@@ -31,8 +30,15 @@ class Form(StatesGroup):
 # Обработчик команды /start
 @dp.message_handler(commands='start')
 async def cmd_start(message: types.Message):
+    logging.info("Команда /start получена")
     await Form.name.set()
     await message.reply("Привет! Я помогу тебе создать заявление. Введи своё имя и фамилию.")
+
+# Обработчик команды /help
+@dp.message_handler(commands='help')
+async def cmd_help(message: types.Message):
+    logging.info("Команда /help получена")
+    await message.reply("Используйте команду /start, чтобы начать создание заявления. Следуйте инструкциям для ввода данных.")
 
 # Обработчик ввода имени и фамилии
 @dp.message_handler(state=Form.name)
@@ -88,4 +94,5 @@ def replace_text(doc, placeholder, replacement):
                 replace_text(cell, placeholder, replacement)
 
 if __name__ == '__main__':
+    logging.info("Запуск бота")
     executor.start_polling(dp, skip_updates=True)
